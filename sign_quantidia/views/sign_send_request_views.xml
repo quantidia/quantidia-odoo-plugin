@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sign_send_request_view_form_quantidia" model="ir.ui.view">
+        <field name="name">sign.send.request.view.form.quantidia</field>
+        <field name="model">sign.send.request</field>
+        <field name="inherit_id" ref="sign.sign_send_request_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Antes del footer: siempre visible (tanto Send como Sign Now) -->
+            <xpath expr="//footer" position="before">
+                <group class="mt-2">
+                    <field name="quantidia_mode" widget="radio" options="{'horizontal': true}"
+                           string="Modo de firma"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

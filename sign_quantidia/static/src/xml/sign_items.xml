@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- El marcador "Firma digital Quantidia" necesita su propio render en
+         sign.signItem: sin branch para el tipo, el item queda vacio y el
+         editor revienta en startResize (no encuentra los resize handlers).
+         Se muestra como un placeholder de firma (nunca tiene valor: es solo
+         una posicion para la ronda digital). -->
+    <t t-name="sign_quantidia.SignItemQuantidiaExtension"
+       t-inherit="sign.signItem"
+       t-inherit-mode="extension">
+        <xpath expr="//t[@t-if=&quot;type == 'strikethrough'&quot;]" position="after">
+            <t t-if="type == 'quantidia_signature'" t-call="sign_quantidia.quantidiaSignatureMarker"/>
+        </xpath>
+    </t>
+
+    <div t-name="sign_quantidia.quantidiaSignatureMarker"
+         t-att-title="role"
+         t-attf-class="{{classes}} o_sign_sign_item o_sign_quantidia_marker"
+         t-att-data-id="id"
+         t-att-style="style">
+        <div class="sign_item_body">
+            <!-- font-size inline: los items del editor viven dentro del
+                 iframe del visor PDF (el SCSS del modulo no llega ahi) y el
+                 updateSignItemFontSize nativo usaria la altura del recuadro
+                 como tamaño para un tipo desconocido. -->
+            <span class="o_sign_signature_item o_placeholder ps-0"
+                  style="font-size: 13px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <i class="fa fa-certificate me-2" role="img"/>
+                <t t-esc="placeholder"/>
+            </span>
+            <t t-if="editMode" t-call="sign.signItemConfiguration"/>
+        </div>
+    </div>
+</templates>

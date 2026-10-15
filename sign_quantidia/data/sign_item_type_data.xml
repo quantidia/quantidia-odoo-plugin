@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Marcador de posicion de la firma digital Quantidia en los templates.
+
+         NO es un campo electronico: nunca se completa en la fase nativa de
+         Odoo Sign. Su posicion/tamano en la pagina es lo que se envia a la
+         API de Quantidia como `signatureRect` cuando le toca firmar al rol
+         responsable (los firmantes sin marcador caen en la grilla automatica
+         de 3 por linea). -->
+    <record id="sign_item_type_quantidia_signature" model="sign.item.type">
+        <field name="name">Quantidia</field>
+        <field name="item_type">quantidia_signature</field>
+        <field name="tip">Quantidia</field>
+        <field name="placeholder">Quantidia</field>
+        <field name="icon">fa-certificate</field>
+        <field name="default_width" type="float">0.200</field>
+        <field name="default_height" type="float">0.080</field>
+    </record>
+</odoo>

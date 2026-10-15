@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_quantidia" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.quantidia</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Quantidia Sign" string="Quantidia Sign" name="sign_quantidia">
+                    <block title="General" name="general">
+                        <setting id="default_mode" string="Modo de firma por defecto" help="Modo con el que se crean los pedidos nuevos. Odoo = firma electrónica nativa; Quantidia = firma digital PAdES. No afecta pedidos existentes.">
+                            <field name="quantidia_default_mode"/>
+                        </setting>
+                    </block>
+                    <block title="SDK" name="sdk">
+                        <setting id="sdk_base_url" string="baseUrl">
+                            <field name="quantidia_sdk_base_url"/>
+                        </setting>
+                        <setting id="sdk_api_base" string="apiBase">
+                            <field name="quantidia_sdk_api_base"/>
+                        </setting>
+                        <setting id="environment_id" string="Environment ID">
+                            <field name="quantidia_environment_id"/>
+                        </setting>
+                        <setting id="company_id" string="Company ID (Quantidia)">
+                            <field name="quantidia_company_id"/>
+                        </setting>
+                        <setting id="agency_id" string="Agency ID (Quantidia)">
+                            <field name="quantidia_agency_id"/>
+                        </setting>
+                        <setting id="api_key" string="SDK Api-Key">
+                            <field name="quantidia_api_key"/>
+                        </setting>
+                    </block>
+                    <block title="Modo de autenticacion" name="auth_mode">
+                        <setting id="auth_mode" string="Modo" help="Simple = usuario/clave de test (demo). SSO = access_token Odoo validado por Quantidia via /oauth/introspect.">
+                            <field name="quantidia_auth_mode"/>
+                        </setting>
+                        <setting id="test_username" string="Usuario test (simple)" invisible="quantidia_auth_mode != 'simple'">
+                            <field name="quantidia_test_username"/>
+                        </setting>
+                        <setting id="test_password" string="Password test (simple)" invisible="quantidia_auth_mode != 'simple'">
+                            <field name="quantidia_test_password"/>
+                        </setting>
+                    </block>
+                    <block title="OAuth / Introspeccion" name="oauth">
+                        <setting id="oauth_client_id" string="client_id">
+                            <field name="quantidia_oauth_client_id"/>
+                        </setting>
+                        <setting id="oauth_client_secret" string="client_secret">
+                            <field name="quantidia_oauth_client_secret"/>
+                        </setting>
+                        <setting id="introspect_api_key" string="Introspect Api-Key">
+                            <field name="quantidia_introspect_api_key"/>
+                        </setting>
+                        <setting id="token_secret" string="Token signing secret">
+                            <field name="quantidia_token_secret"/>
+                        </setting>
+                        <setting id="token_ttl" string="Token TTL (segundos)">
+                            <field name="quantidia_token_ttl"/>
+                        </setting>
+                    </block>
+                    <block title="Seguridad" name="security">
+                        <setting id="require_portal_login" string="Login obligatorio para firmantes con usuario" help="El enlace de firma exige iniciar sesion cuando el firmante tiene usuario de Odoo, y verifica que la identidad coincida. Externos sin usuario siguen firmando por token.">
+                            <field name="quantidia_require_portal_login"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

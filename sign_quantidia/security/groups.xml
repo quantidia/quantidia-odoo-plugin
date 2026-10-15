@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Grupo de usuario avanzado: puede reiniciar/cancelar sus propios requests -->
+    <record id="group_sign_user_advanced" model="res.groups">
+        <field name="name">Usuario Sign Avanzado</field>
+        <field name="implied_ids" eval="[(4, ref('sign.group_sign_user'))]"/>
+        <field name="comment">Usuario interno que puede gestionar (reiniciar/cancelar) sus propios requests de firma.</field>
+    </record>
+
+    <!-- Grupo manager hereda del avanzado (override del nativo) -->
+    <record id="sign.group_sign_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('sign.group_sign_user')), (4, ref('sign_quantidia.group_sign_user_advanced'))]"/>
+    </record>
+</odoo>

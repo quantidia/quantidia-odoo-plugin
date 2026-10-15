@@ -1,0 +1,16 @@
+// Integracion del badge Quantidia dentro del o_field_wrap del signer_x2many.
+// El row del widget usa `d-contents` (display: contents), que aplana sus hijos
+// al grid exterior. Si el badge va como hermano del campo, se vuelve un item
+// extra del grid y rompe el alineamiento. Por eso va DENTRO de o_field_wrap,
+// y aca lo hacemos inline-flex para que el circulo quede pegado al input.
+.o_field_signer_x2many .o_field_wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .o_many2one {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+

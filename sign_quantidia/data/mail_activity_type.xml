@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="mail_activity_type_quantidia_signature" model="mail.activity.type">
+        <field name="name">Firma Quantidia</field>
+        <field name="category">sign_request</field>
+        <field name="quantidia_adhoc">True</field>
+        <field name="icon">fa-pencil-square-o</field>
+        <!-- Despues de la "Firma" nativa de Sign (sequence 30): en el
+             dialogo de programar actividad aparece como alternativa
+             claramente diferenciada, no primero. -->
+        <field name="sequence" eval="35"/>
+    </record>
+</odoo>

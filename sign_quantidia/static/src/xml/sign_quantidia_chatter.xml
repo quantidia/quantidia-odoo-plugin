@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Template (vacio) de la client action del boton "Firmar anexos"
+         del header del sign.request (ver sign_quantidia_header_button.js). -->
+    <div t-name="sign_quantidia.SignOpen"/>
+
+    <!-- Entrada directa al wizard ad hoc desde cualquier registro con
+         chatter: no exige programar antes la actividad "Firma Quantidia"
+         (que queda como entrada alternativa). Deshabilitada por ahora
+         (state.quantidiaWizard nunca se setea) hasta decision de UX. -->
+    <t t-name="sign_quantidia.Chatter" t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//*[hasclass('o-mail-Chatter-activity')]" position="before">
+            <button
+                t-if="props.threadModel !== 'sign.request' and props.threadId and state.quantidiaWizard"
+                class="btn btn-secondary text-nowrap me-1"
+                t-att-class="{'my-2': !props.compactHeight}"
+                t-on-click="onClickQuantidiaAdhocWizard"
+            >
+                <i class="fa fa-certificate me-1" role="img"/>
+                <span>Firmar con Quantidia</span>
+            </button>
+        </xpath>
+    </t>
+</templates>

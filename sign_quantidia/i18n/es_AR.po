@@ -1,0 +1,32 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#     * sign_quantidia
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 00:00+0000\n"
+"PO-Revision-Date: 2026-08-27 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish (Argentina)\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sign_quantidia
+#: model:ir.model.fields,field_description:sign_quantidia.field_quantidia_adhoc_sign_wizard_document__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: sign_quantidia
+#: code:addons/sign_quantidia/static/src/xml/signer_x2many.xml:0
+msgid "Firmante"
+msgstr "Firmante"
+
+#. module: sign_quantidia
+#: code:addons/sign_quantidia/static/src/xml/signer_x2many.xml:0
+msgid "Agregar firmante"
+msgstr "Agregar firmante"

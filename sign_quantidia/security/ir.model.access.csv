@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_quantidia_signer_user,quantidia.signer user,model_quantidia_signer,sign.group_sign_user,1,1,1,0
+access_quantidia_signer_manager,quantidia.signer manager,model_quantidia_signer,sign.group_sign_manager,1,1,1,1
+access_quantidia_digital_signature_user,quantidia.digital.signature user,model_quantidia_digital_signature,sign.group_sign_user,1,0,0,0
+access_quantidia_digital_signature_manager,quantidia.digital.signature manager,model_quantidia_digital_signature,sign.group_sign_manager,1,1,1,1
+access_quantidia_token_consumption_manager,quantidia.token.consumption manager,model_quantidia_token_consumption,sign.group_sign_manager,1,1,1,1
+access_quantidia_adhoc_sign_wizard_user,quantidia.adhoc.sign.wizard user,model_quantidia_adhoc_sign_wizard,sign.group_sign_user,1,1,1,1
+access_quantidia_adhoc_sign_wizard_document_user,quantidia.adhoc.sign.wizard.document user,model_quantidia_adhoc_sign_wizard_document,sign.group_sign_user,1,1,1,1
+access_quantidia_adhoc_sign_wizard_signer_user,quantidia.adhoc.sign.wizard.signer user,model_quantidia_adhoc_sign_wizard_signer,sign.group_sign_user,1,1,1,1

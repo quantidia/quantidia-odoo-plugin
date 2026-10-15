@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="quantidia_adhoc_sign_wizard_view_form" model="ir.ui.view">
+        <field name="name">quantidia.adhoc.sign.wizard.form</field>
+        <field name="model">quantidia.adhoc.sign.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Firmar con Quantidia" create="0" edit="0">
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Los PDF se firmarán juntos en una sola sesión Quantidia.
+                        El primero es el documento principal; los siguientes son anexos.
+                    </div>
+                    <group>
+                        <field name="reference"/>
+                        <field name="subject"/>
+                        <field name="validity"/>
+                    </group>
+                    <div class="o_horizontal_separator mb-2 text-uppercase fw-bolder small">
+                        Firmantes Quantidia
+                    </div>
+                    <field name="set_sign_order" invisible="1"/>
+                    <field name="signer_line_ids" nolabel="1" widget="quantidia_adhoc_signer_x2many" class="w-100" force_save="1"/>
+                    <div class="o_horizontal_separator mb-2 text-uppercase fw-bolder small mt-3">
+                        Documentos PDF
+                    </div>
+                    <field name="document_line_ids" nolabel="1" class="w-100">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="attachment_id"/>
+                            <field name="name"/>
+                            <field name="mimetype" optional="hide"/>
+                        </list>
+                    </field>
+                    <div class="o_horizontal_separator mb-2 text-uppercase fw-bolder small mt-3">
+                        Subir PDFs nuevos
+                    </div>
+                    <field name="uploaded_attachment_ids" widget="many2many_binary" nolabel="1" class="w-100"/>
+                </sheet>
+                <footer>
+                    <button name="action_create_request" type="object" string="Enviar a firma Quantidia" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_quantidia_sign_attachments" model="ir.actions.server">
+        <field name="name">Firmar con Quantidia</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="binding_model_id" ref="base.model_ir_attachment"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env['quantidia.adhoc.sign.wizard'].action_open_from_attachments(records)</field>
+    </record>
+
+    <record id="action_quantidia_sign_documents" model="ir.actions.server">
+        <field name="name">Firmar con Quantidia</field>
+        <field name="model_id" ref="documents.model_documents_document"/>
+        <field name="binding_model_id" ref="documents.model_documents_document"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env['quantidia.adhoc.sign.wizard'].action_open_from_documents(records)</field>
+    </record>
+</odoo>

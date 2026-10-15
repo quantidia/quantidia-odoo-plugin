@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="signer_login_mismatch" name="Sign Quantidia: identidad no coincidente">
+        <html lang="es">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>Enlace de firma de otro firmante</title>
+            </head>
+            <body style="font-family: sans-serif; max-width: 40rem; margin: 4rem auto; padding: 0 1rem; color: #303030;">
+                <h2 style="color: #8a6d3b;">Este enlace de firma no corresponde a tu usuario</h2>
+                <p>
+                    Este enlace pertenece a <strong t-out="signer_name"/>. Como esa persona
+                    dispone de usuario de acceso, por política de seguridad el documento solo
+                    puede firmarse con su identidad.
+                </p>
+                <p>Actualmente estás identificado como <strong t-out="current_user"/>.</p>
+                <p>
+                    Si sos <t t-out="signer_name"/>, cerrá sesión e ingresá con tu usuario
+                    desde el enlace original, o solicitá a quien envió el documento un enlace
+                    asociado a tu cuenta.
+                </p>
+                <p>
+                    <a href="/web/login" style="color: #0d6efd;">Cambiar de usuario</a>
+                </p>
+            </body>
+        </html>
+    </template>
+</odoo>

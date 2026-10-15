@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Defaults del ambiente de TEST. Reescribir en Settings para produccion. -->
+    <record id="sdk_base_url" model="ir.config_parameter">
+        <field name="key">sign_quantidia.sdk_base_url</field>
+        <field name="value">https://test.quantidia.com/integration</field>
+    </record>
+    <record id="sdk_api_base" model="ir.config_parameter">
+        <field name="key">sign_quantidia.sdk_api_base</field>
+        <field name="value">https://test.quantidia.com</field>
+    </record>
+    <record id="token_ttl" model="ir.config_parameter">
+        <field name="key">sign_quantidia.token_ttl</field>
+        <field name="value">300</field>
+    </record>
+    <!-- Las credenciales sensibles (api_key, oauth client_id/secret,
+         environment_id, introspect api-key, token secret) NO se setean por default:
+         se cargan via Settings / env / vault. -->
+</odoo>

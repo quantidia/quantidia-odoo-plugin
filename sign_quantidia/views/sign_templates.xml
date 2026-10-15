@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- El marcador "Firma digital Quantidia" es una posicion para la ronda
+         digital, no un campo a completar en la fase electronica: se oculta de
+         la pagina nativa de firma para que el firmante no vea un recuadro
+         muerto que no puede llenar (y que el navegador de campos no lo liste
+         como pendiente). -->
+    <template id="sign_items_input_info" name="Sign Items: hide Quantidia marker" inherit_id="sign.items_input_info">
+        <xpath expr="//input[hasclass('o_sign_item_input_info')]" position="attributes">
+            <attribute name="t-if">item.type_id.item_type != 'quantidia_signature'</attribute>
+        </xpath>
+    </template>
+</odoo>

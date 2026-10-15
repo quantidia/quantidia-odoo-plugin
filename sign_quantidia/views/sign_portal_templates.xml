@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal /my/signatures: badge que distingue Digital (Quantidia) vs Electrónico -->
+    <template id="sign_portal_my_requests_quantidia" name="My Signatures Quantidia" inherit_id="sign.sign_portal_my_requests">
+        <xpath expr="//td[hasclass('text-center')][hasclass('lh-1')]" position="replace">
+            <td class="text-center lh-1">
+                <!-- Badge principal: estado de la firma -->
+                <span t-attf-class="badge rounded-pill
+                    {{ 'text-bg-success' if sign_request_item.sign_request_id.sudo().state == 'signed'
+                       else 'text-bg-success' if sign_request_item.sudo().state == 'completed'
+                       else 'text-bg-danger' if sign_request_item.sudo().state == 'canceled'
+                       else 'text-bg-info' }}" >
+                    <t t-if="sign_request_item.sign_request_id.sudo().state == 'signed'">
+                        Firmado por completo
+                    </t>
+                    <t t-else="">
+                        <t t-esc="dict(sign_request_item.fields_get(allfields=['state'])['state']['selection']).get(sign_request_item.state)"/>
+                    </t>
+                </span>
+                <!-- Badge Quantidia: si fue firmado digitalmente por Quantidia -->
+                <t t-if="sign_request_item.sign_request_id.sudo().quantidia_status == 'signed'">
+                    <br/>
+                    <span class="badge rounded-pill text-bg-primary mt-1">
+                        Digital
+                    </span>
+                </t>
+                <t t-elif="sign_request_item.sign_request_id.sudo().quantidia_mode == 'digital' and sign_request_item.sign_request_id.sudo().quantidia_status == 'in_progress'">
+                    <br/>
+                    <span class="badge rounded-pill text-bg-info mt-1">
+                        Firma digital en curso
+                    </span>
+                </t>
+            </td>
+        </xpath>
+    </template>
+    <!-- Detalle /my/signature/<id>: lista de documentos del pedido con
+         vista por archivo + limpieza del aviso de email. -->
+    <template id="sign_portal_my_request_quantidia"
+              name="My Signature: documents list"
+              inherit_id="sign.sign_portal_my_request">
+        <!-- "(no se ha enviado el acceso por correo electrónico)": ruido
+             para el firmante (el mail del turno lo maneja Quantidia). -->
+        <xpath expr="//em[@t-if='not sign.is_mail_sent']" position="replace"/>
+        <xpath expr="//div[hasclass('o_sign_button')]" position="before">
+            <div class="row mb-3" t-if="my_sign_item.sign_request_id.sudo().quantidia_document_ids">
+                <div class="col-12">
+                    <p class="o_portal_category text-muted">Documentos a firmar</p>
+                    <t t-foreach="my_sign_item.sign_request_id.sudo().quantidia_document_ids"
+                       t-as="doc">
+                        <div>
+                            <a t-attf-href="/sign_quantidia/document_pdf/#{my_sign_item.sign_request_id.id}/#{my_sign_item.access_token}?doc=#{doc_index}"
+                               target="_blank">
+                                <i class="fa fa-file-pdf-o me-1" role="img"/>
+                                <t t-out="doc.name"/>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

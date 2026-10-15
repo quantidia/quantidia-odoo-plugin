@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List: tracking de firmas digitales -->
+    <record id="quantidia_digital_signature_view_list" model="ir.ui.view">
+        <field name="name">quantidia.digital.signature.list</field>
+        <field name="model">quantidia.digital.signature</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sign_request_id"/>
+                <field name="partner_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'signed'"
+                       decoration-info="state == 'pending'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="signing_date"/>
+                <field name="signer_profile_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form: tracking detail -->
+    <record id="quantidia_digital_signature_view_form" model="ir.ui.view">
+        <field name="name">quantidia.digital.signature.form</field>
+        <field name="model">quantidia.digital.signature</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sign_request_id"/>
+                            <field name="request_item_id"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                            <field name="signing_date"/>
+                            <field name="signer_profile_id"/>
+                        </group>
+                    </group>
+                    <div class="oe_chatter">
+                        <div class="btn-group" groups="sign.group_sign_manager">
+                            <button class="btn btn-primary" type="object" name="action_mark_signed" string="Marcar firmado" invisible="state != 'pending'">
+                                <i class="fa fa-check"/> Marcar firmado
+                            </button>
+                            <button class="btn btn-warning" type="object" name="action_mark_rejected" string="Marcar rechazado" invisible="state != 'pending'">
+                                <i class="fa fa-times"/> Marcar rechazado
+                            </button>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: ver tracking -->
+    <record id="quantidia_digital_signature_action" model="ir.actions.act_window">
+        <field name="name">Firmas digitales Quantidia</field>
+        <field name="res_model">quantidia.digital.signature</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Menu item (under Sign) -->
+    <menuitem id="quantidia_digital_signature_menu"
+              name="Seguimiento de firmas"
+              parent="sign_quantidia.quantidia_root_menu"
+              action="quantidia_digital_signature_action"
+              sequence="30"/>
+</odoo>

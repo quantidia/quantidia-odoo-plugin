@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form: boton descarga + estado fusionado -->
+    <record id="sign_request_view_form_quantidia" model="ir.ui.view">
+        <field name="name">sign.request.form.quantidia</field>
+        <field name="model">sign.request</field>
+        <field name="inherit_id" ref="sign.sign_request_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Un solo "Cancelar" (el nativo): cancela el pedido completo,
+                 ronda digital incluida (ver override de cancel()). -->
+            <!-- "Vinculado a" siempre readonly: se setea al crear (wizard de
+                 la actividad) y editable a mitad de firma solo confunde;
+                 readonly ademas lo renderiza como link a ancho completo. -->
+            <xpath expr="//sheet//field[@name='reference_doc']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <!-- "Firmar anexos" en el header (antes en el chatter): abre el
+                 SDK via client action. Solo con ronda digital activa. Va
+                 DENTRO del div flex del header nativo, despues de Cancelar
+                 (como hermano del statusbar queda en otra fila). -->
+            <xpath expr="//header//div[hasclass('d-flex')][1]" position="inside">
+                <button name="action_open_quantidia_sign_header"
+                        type="object"
+                        string="Firmar documentos"
+                        class="oe_highlight"
+                        invisible="not quantidia_my_turn"/>
+            </xpath>
+            <!-- "Vista previa" solo abre el PDF principal: en un pedido
+                 multi-PDF no aporta (no deja elegir archivo), se oculta. -->
+            <xpath expr="//header//button[@name='go_to_document']" position="attributes">
+                <attribute name="invisible">state == 'expired' or quantidia_is_multi_pdf</attribute>
+            </xpath>
+            <!-- "Descargar" (dropdown de completados): comportamiento nativo
+                 en modo electronic; en modo digital recien cuando la firma
+                 digital completo (baja los PDFs firmados del grupo, ZIP en
+                 multi-PDF). -->
+            <xpath expr="//header//field[@name='completed_document_ids']" position="attributes">
+                <attribute name="invisible">state != 'signed' or (quantidia_mode == 'digital' and quantidia_status != 'signed')</attribute>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_restart_digital_round"
+                        type="object"
+                        string="Reiniciar ronda digital"
+                        groups="sign.group_sign_manager,sign_quantidia.group_sign_user_advanced"
+                        invisible="quantidia_mode != 'digital' or quantidia_status != 'cancelled'"/>
+            </xpath>
+            <!-- Ribbon "Signed" nativo: ocultarlo mientras la ronda digital
+                 Quantidia esta activa (el request NO esta firmado del todo).
+                 En modo electronic queda el comportamiento nativo. -->
+            <xpath expr="//widget[@name='web_ribbon'][1]" position="attributes">
+                <attribute name="invisible">state != 'signed' or (quantidia_mode == 'digital' and quantidia_status in ('in_progress', 'cancelled'))</attribute>
+            </xpath>
+            <xpath expr="//widget[@name='web_ribbon'][1]" position="before">
+                <widget name="web_ribbon" title="Firma digital"
+                        bg_color="text-bg-info" invisible="quantidia_status != 'in_progress'"/>
+                <widget name="web_ribbon" title="Cancelada"
+                        bg_color="text-bg-danger" invisible="quantidia_status != 'cancelled'"/>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <!-- Estado nativo visible salvo en modo digital (ahi manda
+                     el estado fusionado Quantidia). -->
+                <attribute name="invisible">quantidia_mode == 'digital'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="quantidia_status" invisible="1"/>
+                <field name="quantidia_my_turn" invisible="1"/>
+                <field name="quantidia_is_multi_pdf" invisible="1"/>
+                <field name="quantidia_signed_attachment_id" invisible="1"/>
+                <field name="quantidia_reject_reason" optional="hide"/>
+            </xpath>
+            <!-- Notebook: tracking de firmas digitales (Fase 2) -->
+            <xpath expr="//sheet/group" position="after">
+                <div class="oe_title mb-3" invisible="not quantidia_mode">
+                    <label for="quantidia_combined_status" class="oe_edit_only"/>
+                    <h4>
+                        <!-- Modo de firma como badge informativo junto al
+                             estado: no va mas en el header (se pisaba con
+                             los botones nativos) y con la ronda en marcha no
+                             se cambia igual. -->
+                        <field name="quantidia_mode" widget="badge"
+                               decoration-info="quantidia_mode == 'digital'"
+                               decoration-muted="quantidia_mode == 'electronic'"
+                               string="Modo"/>
+                        <span class="ms-2"/>
+                        <field name="quantidia_combined_status" widget="badge"
+                               decoration-success="quantidia_combined_status in ('signed_digital', 'signed_electronic')"
+                               decoration-info="quantidia_combined_status == 'in_progress'"
+                               decoration-muted="quantidia_combined_status == 'pending'"
+                               decoration-danger="quantidia_combined_status in ('cancelled', 'expired')"
+                               string="Estado de firma"/>
+                    </h4>
+                </div>
+            </xpath>
+            <!-- Archivos de la solicitud a la vista (sin pestañas): es la
+                 respuesta a "que estoy firmando". La pestaña "Firma
+                 Digital" se elimino: "Firmantes" ya muestra el avance. -->
+            <xpath expr="//sheet//notebook[1]" position="before">
+                <div class="mb-3" invisible="not quantidia_document_ids">
+                    <span class="fw-bold">Archivos a firmar</span>
+                    <field name="quantidia_document_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="name" string="Documento"/>
+                            <field name="create_date" string="Agregado"/>
+                            <button name="action_quantidia_view_pdf" type="object"
+                                    icon="fa-eye" string="Ver"/>
+                        </list>
+                    </field>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban: badge del estado fusionado -->
+    <record id="sign_request_view_kanban_quantidia" model="ir.ui.view">
+        <field name="name">sign.request.kanban.quantidia</field>
+        <field name="model">sign.request</field>
+        <field name="inherit_id" ref="sign.sign_request_view_kanban"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//kanban" position="inside">
+                    <field name="quantidia_combined_status"/>
+                </xpath>
+                <xpath expr="//div[hasclass('o_signers')]" position="before">
+                    <div class="mb-1" invisible="quantidia_combined_status not in ('signed_digital', 'in_progress')">
+                        <span class="badge rounded-pill"
+                              t-attf-class="{{ quantidia_combined_status == 'signed_digital' ? 'text-bg-success' : 'text-bg-info' }}">
+                            <i class="fa fa-id-card-o me-1" title="Quantidia"/>
+                            <t t-out="quantidia_combined_status == 'signed_digital' ? 'Firma Quantidia' : 'Firma iniciada'"/>
+                        </span>
+                    </div>
+                </xpath>
+            </data>
+        </field>
+    </record>
+
+    <!-- Lista (tree): ocultar state nativo, mostrar estado fusionado -->
+    <record id="sign_request_view_tree_quantidia" model="ir.ui.view">
+        <field name="name">sign.request.list.quantidia</field>
+        <field name="model">sign.request</field>
+        <field name="inherit_id" ref="sign.sign_request_view_tree"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="optional">hide</attribute>
+                </xpath>
+                <xpath expr="//field[@name='state']" position="after">
+                    <field name="quantidia_combined_status" optional="show"
+                           widget="badge"
+                           decoration-success="quantidia_combined_status in ('signed_digital', 'signed_electronic')"
+                           decoration-info="quantidia_combined_status == 'in_progress'"
+                           decoration-muted="quantidia_combined_status == 'pending'"
+                           decoration-danger="quantidia_combined_status in ('cancelled', 'expired')"
+                           string="Estado"/>
+                </xpath>
+            </data>
+        </field>
+    </record>
+
+    <!-- Search: reemplazar filtros nativos por estados fusionados Quantidia -->
+    <record id="sign_request_view_search_quantidia" model="ir.ui.view">
+        <field name="name">sign.request.search.quantidia</field>
+        <field name="model">sign.request</field>
+        <field name="inherit_id" ref="sign.sign_request_view_search"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//filter[@name='sent']" position="replace">
+                    <filter name="q_pending" string="Por firmar"
+                            domain="[('state', '=', 'sent'), ('quantidia_status', 'in', ['pending', False])]"/>
+                    <filter name="q_in_progress" string="Firma iniciada"
+                            domain="[('quantidia_status', '=', 'in_progress')]"/>
+                </xpath>
+                <xpath expr="//filter[@name='signed']" position="replace">
+                    <filter name="q_signed_digital" string="Firma Quantidia"
+                            domain="[('quantidia_status', '=', 'signed')]"/>
+                    <filter name="q_signed_electronic" string="Firma Odoo"
+                            domain="[('state', '=', 'signed'), ('quantidia_status', '!=', 'signed')]"/>
+                </xpath>
+                <xpath expr="//filter[@name='canceled']" position="replace">
+                    <filter name="q_cancelled" string="Cancelado"
+                            domain="[('state', '=', 'canceled')]"/>
+                </xpath>
+                <xpath expr="//filter[@name='group_by_state']" position="attributes">
+                    <attribute name="string">Estado Quantidia</attribute>
+                    <attribute name="context">{'group_by': 'quantidia_status'}</attribute>
+                </xpath>
+            </data>
+        </field>
+    </record>
+
+    <!-- Accion para reiniciar ronda digital (desde chatter/notebook) -->
+    <record id="restart_digital_round_action" model="ir.actions.server">
+        <field name="name">Reiniciar ronda digital</field>
+        <field name="model_id" ref="sign.model_sign_request"/>
+        <field name="binding_model_id" ref="sign.model_sign_request"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">
+for rec in records:
+    rec.action_restart_digital_round()
+        </field>
+    </record>
+    <!-- Menu propio: lista -> FORMULARIO del pedido. Las entradas nativas
+         de Sign (menu Documentos) abren el visor del PDF (client action),
+         que en un pedido multi-PDF no muestra el conjunto. -->
+    <record id="quantidia_requests_action" model="ir.actions.act_window">
+        <field name="name">Solicitudes Quantidia</field>
+        <field name="res_model">sign.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('quantidia_adhoc', '=', True)]</field>
+    </record>
+    <!-- Menu raiz Quantidia: agrupa solicitudes, firmantes y tracking
+         para no multiplicar entradas en la app Firma. -->
+    <menuitem id="quantidia_root_menu"
+              name="Quantidia"
+              parent="sign.menu_document"
+              sequence="25"/>
+    <menuitem id="quantidia_requests_menu"
+              name="Solicitudes"
+              parent="quantidia_root_menu"
+              action="quantidia_requests_action"
+              sequence="10"/>
+</odoo>

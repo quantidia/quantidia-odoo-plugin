@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pagina portal del turno de firma digital (D9). El controller
+         sign_quantidia_portal.py decide page_state; aca solo se pinta.
+         Layout: visor del PDF a firmar + panel de estado/accion. -->
+    <template id="quantidia_portal_sign" name="Quantidia - Turno de firma digital">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <t t-call-assets="sign.assets_public_sign" t-js="false"/>
+                <script type="text/javascript">
+                    odoo.__session_info__ = <t t-out="json.dumps(request.env['ir.http'].get_frontend_session_info_sign())"/>;
+                </script>
+                <t t-call-assets="sign.assets_public_sign" t-css="false"/>
+                <script type="text/javascript">
+                    odoo.define("sign_quantidia.portal_page", ["@sign_quantidia/js/sign_quantidia_core", "@web/core/network/rpc"], function (require) {
+                        const { openQuantidiaSign } = require("@sign_quantidia/js/sign_quantidia_core");
+                        const { rpc } = require("@web/core/network/rpc");
+
+                        // shim de notification: no hay env de OWL en esta pagina.
+                        const notify = {
+                            add(message, options) {
+                                const el = document.createElement("div");
+                                el.className = "qportal-notification " + ((options &amp;&amp; options.type) || "info");
+                                el.textContent = message;
+                                document.body.appendChild(el);
+                                if (!(options &amp;&amp; options.sticky)) {
+                                    setTimeout(() => el.remove(), 8000);
+                                }
+                            },
+                        };
+
+                        // El script inline corre en el head ANTES de que exista
+                        // el boton en el DOM: adjuntar recien en DOMContentLoaded.
+                        function qportalInit() {
+                            // Selector de documentos (multi-PDF): cada tab
+                            // carga su PDF en el visor compartido.
+                            const frame = document.getElementById("qportal_doc_frame");
+                            document.querySelectorAll(".qportal-doc-tab").forEach(function (tab) {
+                                tab.addEventListener("click", function () {
+                                    document.querySelectorAll(".qportal-doc-tab").forEach(function (t2) { t2.classList.remove("active"); });
+                                    tab.classList.add("active");
+                                    if (frame) {
+                                        frame.src = frame.src.split("?")[0] + "?doc=" + tab.dataset.index;
+                                    }
+                                });
+                            });
+                            const btn = document.getElementById("qportal_sign_button");
+                            if (!btn) return;
+                            btn.addEventListener("click", async () => {
+                                btn.disabled = true;
+                                btn.classList.add("qportal-loading");
+                                try {
+                                    const config = await rpc("/sign_quantidia/prepare_public", {
+                                        sign_request_id: Number(btn.dataset.requestId),
+                                        access_token: btn.dataset.token,
+                                    });
+                                    if (config.error) {
+                                        notify.add("No se pudo iniciar la firma digital: " + config.error, { type: "danger", sticky: true });
+                                        return;
+                                    }
+                                    config.itemToken = btn.dataset.token;
+                                    // Al terminar, recargar esta misma pagina: vuelve a
+                                    // renderizar con el estado de ronda y el PDF
+                                    // acumulado actualizados (incluye tu firma).
+                                    config.successRedirect = window.location.pathname;
+                                    await openQuantidiaSign({ notification: notify }, Number(btn.dataset.requestId), config);
+                                } catch (e) {
+                                    notify.add("Error inesperado: " + (e &amp;&amp; e.message || e), { type: "danger", sticky: true });
+                                } finally {
+                                    btn.disabled = false;
+                                    btn.classList.remove("qportal-loading");
+                                }
+                            });
+                        }
+                        if (document.readyState === "loading") {
+                            document.addEventListener("DOMContentLoaded", qportalInit);
+                        } else {
+                            qportalInit();
+                        }
+                    });
+                </script>
+                <style>
+                    .qportal-shell{min-height:100vh;background:#f5f6f8;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px;box-sizing:border-box}
+                    .qportal-layout{display:flex;gap:20px;max-width:1280px;margin:0 auto;align-items:stretch}
+                    .qportal-doc{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+                    .qportal-docs-list{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;margin-bottom:12px;padding-bottom:4px;scrollbar-width:thin}
+                    .qportal-doc-tab{flex:0 0 auto;background:#fff;border:1px solid #d8dde3;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer;color:#3a4450;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+                    .qportal-doc-tab.active{background:#0d6efd;border-color:#0d6efd;color:#fff;font-weight:600}
+                    .qportal-doc-frame{width:100%;height:calc(100vh - 120px);min-height:420px;background:#fff;border:0;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,.08)}
+                    .qportal-side{flex:0 0 380px;display:flex;flex-direction:column}
+                    .qportal-card{background:#fff;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,.08);padding:24px;box-sizing:border-box}
+                    .qportal-title{font-size:1.15rem;font-weight:600;margin:0 0 4px;color:#242b33;word-wrap:break-word}
+                    .qportal-sub{color:#66707a;margin:0 0 16px;font-size:.9rem}
+                    .qportal-banner{border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.9rem;line-height:1.45}
+                    .qportal-banner.info{background:#e8f2fd;color:#1b4f81}
+                    .qportal-banner.success{background:#e6f6ea;color:#1d5b30}
+                    .qportal-banner.danger{background:#fdecec;color:#7c1d1d}
+                    .qportal-progress{color:#66707a;font-size:.85rem;margin-bottom:14px}
+                    .qportal-progress .bar{height:6px;border-radius:4px;background:#e3e6ea;overflow:hidden;margin-top:6px}
+                    .qportal-progress .bar &gt; div{height:100%;background:#1e8e4e;transition:width .3s}
+                    .qportal-btn{display:block;width:100%;background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:13px;font-size:1rem;font-weight:600;cursor:pointer}
+                    .qportal-btn:hover{background:#0b5ed7}
+                    .qportal-btn[disabled]{opacity:.6;cursor:wait}
+                    .qportal-hint{color:#98a1ab;font-size:.8rem;margin-top:10px;text-align:center}
+                    .qportal-notification{position:fixed;top:16px;right:16px;max-width:420px;padding:12px 16px;border-radius:8px;color:#fff;font-size:.9rem;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:9999;white-space:pre-wrap}
+                    .qportal-notification.danger{background:#c0392b}
+                    .qportal-notification.success{background:#1e8e4e}
+                    .qportal-notification.info,.qportal-notification.warning{background:#34495e}
+                    @media (max-width: 900px){
+                        .qportal-layout{flex-direction:column}
+                        .qportal-side{flex:auto}
+                        .qportal-doc-frame{height:60vh}
+                    }
+                </style>
+            </t>
+            <t t-set="body_classname" t-value="'qportal-shell'"/>
+
+            <div class="qportal-layout">
+                <!-- Lista de documentos del pedido + visor. Un solo boton de
+                     firma (en el panel) firma TODOS los archivos via SDK. -->
+                <div class="qportal-doc">
+                    <div class="qportal-docs-list" t-if="len(documents) > 1">
+                        <t t-foreach="documents" t-as="d">
+                            <button type="button"
+                                    t-attf-class="qportal-doc-tab #{d['index'] == 0 and 'active' or ''}"
+                                    t-att-data-index="d['index']"
+                                    t-out="d['name']"/>
+                        </t>
+                    </div>
+                    <iframe id="qportal_doc_frame" class="qportal-doc-frame"
+                            t-attf-src="/sign_quantidia/document_pdf/#{sign_request_id}/#{item_token}"
+                            title="Documento a firmar"/>
+                </div>
+
+                <div class="qportal-side">
+                    <div class="qportal-card">
+                        <h1 class="qportal-title" t-out="reference or 'Documento'"/>
+                        <p class="qportal-sub">
+                            Firma digital Quantidia · <t t-out="signer_name"/>
+                        </p>
+
+                        <div class="qportal-progress">
+                            <t t-out="round_done"/> de <t t-out="round_total"/> participantes ya firmaron
+                            <div class="bar">
+                                <div t-att-style="'width:' + str(round_done * 100 // round_total if round_total else 0) + '%'"/>
+                            </div>
+                        </div>
+
+                        <div t-if="page_state == 'turn'" class="qportal-banner info">
+                            Es tu turno: revisá el documento y cuando estés
+                            listo confirmá tu firma digital.
+                        </div>
+                        <div t-if="page_state == 'turn'">
+                            <button type="button" id="qportal_sign_button" class="qportal-btn"
+                                    t-att-data-request-id="sign_request_id"
+                                    t-att-data-token="item_token">
+                                Firmar digitalmente
+                            </button>
+                            <div class="qportal-hint">Se abrirá la ventana de Quantidia para firmar con certificado</div>
+                        </div>
+
+                        <div t-if="page_state == 'waiting'" class="qportal-banner info">
+                            Todavía no es tu turno de firma digital. La ronda es
+                            en orden: cuando llegue tu turno recibirás un correo.
+                            Mientras tanto podés revisar el documento y su avance.
+                        </div>
+
+                        <div t-if="page_state == 'signed'" class="qportal-banner success">
+                            Ya firmaste digitalmente este documento. Cuando todos
+                            los participantes completen su firma recibirás el
+                            documento final por correo.
+                        </div>
+
+                        <div t-if="page_state == 'completed'" class="qportal-banner success">
+                            El proceso de firma está completado: todos los
+                            participantes firmaron. El documento que ves ya
+                            incluye todas las firmas digitales.
+                        </div>
+
+                        <div t-if="page_state == 'cancelled'" class="qportal-banner danger">
+                            La firma digital de este documento fue cancelada o
+                            rechazada. Contactate con el remitente para más
+                            información.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Boton "Solicitar firma" del chatter (agregado por el modulo sign a
+         mail.Activity): para actividades "Firma Quantidia" el label y el
+         icono distinguen la entrada del flujo estandar de Sign. Si se
+         renombra el tipo, vuelve graciosamente al label estandar. -->
+    <t t-name="sign_quantidia.ActivityRequestSignQuantidia"
+       t-inherit="mail.Activity"
+       t-inherit-mode="extension">
+        <xpath expr="//button[@t-on-click='onClickRequestSign']" position="replace">
+            <button
+                t-if="props.activity.activity_category == 'sign_request'"
+                class="btn btn-link p-0 me-3"
+                t-att-data-chaining-type-activity="props.activity.chaining_type"
+                t-att-data-previous-activity-type-id="props.activity.activity_type_id[0]"
+                t-att-data-activity-id="props.activity.id"
+                t-on-click="onClickRequestSign"
+            >
+                <i t-if="props.activity.activity_type_id[1] === 'Firma Quantidia'"
+                   class="fa fa-certificate me-1" role="img"/>
+                <i t-if="props.activity.activity_type_id[1] !== 'Firma Quantidia'"
+                   class="fa fa-pencil-square-o"/>
+                <t t-if="props.activity.activity_type_id[1] === 'Firma Quantidia'">
+                    Solicitar firma Quantidia
+                </t>
+                <t t-else="">Solicitar firma</t>
+            </button>
+        </xpath>
+    </t>
+
+    <!-- Mismo boton en el popover de actividades (solo icono): tooltip
+         distintivo para la actividad Quantidia. -->
+    <t t-name="sign_quantidia.ActivityListPopoverItemRequestSignQuantidia"
+       t-inherit="mail.ActivityListPopoverItem"
+       t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-ActivityListPopoverItem-requestSign')]" position="attributes">
+            <attribute name="t-att-title">props.activity.activity_type_id[1] === 'Firma Quantidia' ? 'Solicitar firma Quantidia' : 'Solicitar firma'</attribute>
+        </xpath>
+    </t>
+</templates>

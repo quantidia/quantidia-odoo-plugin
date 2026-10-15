@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fase 2b: notificaciones de la ronda digital.
+
+         Ambos templates renderizan sobre quantidia.digital.signature para
+         tener en contexto el partner del firmante (destinatario) y el
+         access_token de su item (enlace del portal D9). -->
+    <record id="mail_template_quantidia_turn" model="mail.template">
+        <field name="name">Quantidia: es tu turno de firma digital</field>
+        <field name="model_id" ref="sign_quantidia.model_quantidia_digital_signature"/>
+        <!-- auto_delete=False: sin auditoria de entrega (Odoo 19 lo prende
+             por default) no se puede diagnosticar si un mail de turno
+             llego a Brevo o rebotó. -->
+        <field name="auto_delete" eval="False"/>
+        <field name="subject">{{ object.sign_request_id.reference }} — es tu turno de firma digital</field>
+        <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+        <field name="email_from">{{ object.sign_request_id.create_uid.partner_id.email_formatted }}</field>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <!-- IMPORTANTE: el body_html de mail.template se renderiza con
+             motor QWEB (subject/email_to usan inline {{ }}): el cuerpo
+             exige <t t-out="..."/> y t-attf-href. Los href relativos los
+             absolutiza el post-proceso con el base_url del registro. -->
+        <field name="body_html" type="html">
+<div style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;color:#242b33;">
+    <p>Hola <t t-out="object.partner_id.name"/>,</p>
+    <p>Llegó tu turno de firma digital del documento
+        <strong><t t-out="object.sign_request_id.reference"/></strong>:
+        vas a firmar con certificado digital a través de Quantidia.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a t-attf-href="/quantidia/sign/{{ object.sign_request_id.id }}/{{ object.request_item_id.access_token }}"
+           style="background-color:#0d6efd;color:#ffffff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;">
+            Firmar digitalmente
+        </a>
+    </div>
+    <p style="color:#66707a;font-size:13px;">
+        Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br/>
+        <t t-out="object.get_base_url()"/>/quantidia/sign/<t t-out="object.sign_request_id.id"/>/<t t-out="object.request_item_id.access_token"/>
+    </p>
+    <p style="color:#66707a;font-size:13px;">
+        La ronda avanza en orden: cuando todos los participantes firmen
+        recibirás el documento final por correo.
+    </p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_quantidia_completed" model="mail.template">
+        <field name="name">Quantidia: firma digital completada</field>
+        <field name="model_id" ref="sign_quantidia.model_quantidia_digital_signature"/>
+        <field name="auto_delete" eval="False"/>
+        <field name="subject">{{ object.sign_request_id.reference }} — firma digital completada</field>
+        <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+        <field name="email_from">{{ object.sign_request_id.create_uid.partner_id.email_formatted }}</field>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body_html" type="html">
+<div style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;color:#242b33;">
+    <p>Hola <t t-out="object.partner_id.name"/>,</p>
+    <p>El documento <strong><t t-out="object.sign_request_id.reference"/></strong>
+        quedó completamente firmado: todos los participantes completaron su
+        firma digital.</p>
+    <p>Adjunto encontrarás el PDF final con todas las firmas digitales.</p>
+</div>
+        </field>
+    </record>
+</odoo>

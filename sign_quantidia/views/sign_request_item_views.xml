@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Agrega el badge "Firma digital" a la lista de firmantes (al armar el
+         request el usuario ve quiénes están habilitados para Quantidia). -->
+    <record id="sign_request_item_view_tree_quantidia" model="ir.ui.view">
+        <field name="name">sign.request.item.list.quantidia</field>
+        <field name="model">sign.request.item</field>
+        <field name="inherit_id" ref="sign.sign_request_item_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='role_id']" position="after">
+                <field name="quantidia_digital_ready" optional="show"/>
+                <field name="quantidia_digital_state" widget="badge" optional="show"
+                       string="Ronda digital"
+                       decoration-success="quantidia_digital_state == 'signed'"
+                       decoration-info="quantidia_digital_state == 'pending'"
+                       decoration-muted="quantidia_digital_state == 'waiting'"
+                       decoration-danger="quantidia_digital_state in ('rejected', 'cancelled')"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
